@@ -227,8 +227,8 @@ const Sprints = () => {
                 <td>{sprint.name}</td>
                 <td>{sprint.projectId?.name || 'N/A'}</td>
                 <td>
-                  <span className={`badge badge-${sprint.status === 'Completed' ? 'success' : sprint.status === 'Active' ? 'info' : 'warning'}`}>
-                    {sprint.status}
+                  <span className={`badge badge-${(sprint.status || 'Pending') === 'Completed' ? 'success' : (sprint.status || 'Pending') === 'Active' ? 'info' : 'warning'}`}>
+                    {sprint.status || 'Pending'}
                   </span>
                 </td>
                 <td>{sprint.plannedVelocity}</td>

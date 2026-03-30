@@ -1,0 +1,257 @@
+.audit-container {
+  padding: 2rem;
+  background-color: #0f172a;
+  color: #f8fafc;
+  min-height: 100vh;
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.header-icon {
+  color: #60a5fa;
+  margin-right: 0.75rem;
+}
+
+.audit-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.stat-pill {
+  background: #1e293b;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #334155;
+  font-size: 0.9rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.stat-pill strong {
+  color: #60a5fa;
+}
+
+.audit-controls {
+  display: flex;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.search-box, .filter-box {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  gap: 0.75rem;
+  color: #94a3b8;
+}
+
+.search-box input, .filter-box select {
+  background: transparent;
+  border: none;
+  color: white;
+  padding: 0.75rem 0;
+  outline: none;
+  font-size: 0.9rem;
+}
+
+.filter-box select {
+  cursor: pointer;
+}
+
+.logs-table-wrapper {
+  background: #1e293b;
+  border-radius: 12px;
+  border: 1px solid #334155;
+  overflow: hidden;
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.logs-table th {
+  background: #0f172a;
+  padding: 1rem 1.5rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.logs-table td {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #334155;
+  font-size: 0.95rem;
+}
+
+.type-badge {
+  background: #334155;
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+
+.suggestion-text {
+  max-width: 300px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #cbd5e1;
+}
+
+.conf-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 120px;
+}
+
+.bar-fill {
+  flex-grow: 1;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+.status-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.status-badge.pending { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.status-badge.accepted { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.status-badge.overridden { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+.view-details-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.view-details-btn:hover {
+  color: #3b82f6;
+}
+
+/* Modal Styling */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.log-modal {
+  background: #1e293b;
+  width: 100%;
+  max-width: 600px;
+  border-radius: 16px;
+  border: 1px solid #334155;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.log-modal header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #334155;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.log-modal header button {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.detail-section {
+  margin-bottom: 2rem;
+}
+
+.detail-section label, .decision-section label {
+  display: block;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.explanation-box {
+  background: #0f172a;
+  padding: 1.25rem;
+  border-radius: 8px;
+  border: 1px solid #334155;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.decision-buttons {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.accept-btn, .decline-btn {
+  flex: 1;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.accept-btn { background: #10b981; color: white; }
+.decline-btn { background: #ef4444; color: white; }
+
+.decision-section textarea {
+  width: 100%;
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 1rem;
+  color: white;
+  min-height: 100px;
+  resize: vertical;
+}
+
+.override-reason-box {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 1rem;
+  border-radius: 8px;
+}

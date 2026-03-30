@@ -202,14 +202,95 @@ class EvaluationMetricsService {
    * @returns {Object} Accuracy metrics
    */
   async calculateAIAccuracy(projectId) {
-    // This would compare AI predictions with actual outcomes
-    // For now, return placeholder
-    return {
-      sprintCapacityAccuracy: 'N/A - Requires prediction tracking',
-      riskPredictionAccuracy: 'N/A - Requires prediction tracking',
-      taskPriorityAccuracy: 'N/A - Requires prediction tracking',
-      note: 'Accuracy tracking requires logging of predictions and outcomes'
-    };
+    const AIDecisionLog = require('../../models/AIDecisionLog');
+    
+    try {
+      // 1. Sprint Capacity Accuracy
+      const capacityLogs = await AIDecisionLog.find({
+        type: 'sprint_capacity',
+        humanDecision: 'Accepted'
+      });
+      
+      let capacityAccuracy = 0;
+      let capacityCount = 0;
+      
+      for (const log of capacityLogs) {
+        const sprint = await Sprint.findById(log.entityId);
+        if (sprint && sprint.status === 'Completed' && sprint.actualVelocity > 0) {
+          const predicted = log.aiSuggestion.predictedCapacity;
+          const actual = sprint.actualVelocity;
+          const error = Math.abs(predicted - actual) / actual;
+          capacityAccuracy += Math.max(0, 1 - error);
+          capacityCount++;
+        }
+      }
+      
+      const avgCapacityAccuracy = capacityCount > 0 ? (capacityAccuracy / capacityCount) * 100 : 0;
+
+      // 2. Risk Prediction Accuracy
+      const riskLogs = await AIDecisionLog.find({
+        type: 'risk_prediction'
+      });
+      
+      let riskAccuracy = 0;
+      let riskCount = 0;
+      
+      for (const log of riskLogs) {
+        const sprints = await Sprint.find({ 
+          projectId: log.entityId,
+          status: 'Completed',
+          createdAt: { $gt: log.createdAt }
+        }).limit(2);
+        
+        if (sprints.length > 0) {
+          const predictedRisk = log.aiSuggestion.riskLevel;
+          const actualHealth = sprints.reduce((acc, s) => acc + s.sprintHealthScore, 0) / sprints.length;
+          
+          let actualRisk = 'Low';
+          if (actualHealth < 60) actualRisk = 'High';
+          else if (actualHealth < 80) actualRisk = 'Medium';
+          
+          if (predictedRisk === actualRisk) {
+            riskAccuracy += 1;
+          } else if (
+            (predictedRisk === 'Medium' && (actualRisk === 'Low' || actualRisk === 'High')) ||
+            (actualRisk === 'Medium' && (predictedRisk === 'Low' || predictedRisk === 'High'))
+          ) {
+            riskAccuracy += 0.5;
+          }
+          riskCount++;
+        }
+      }
+      
+      const avgRiskAccuracy = riskCount > 0 ? (riskAccuracy / riskCount) * 100 : 0;
+
+      // 3. Task Priority Acceptance (Proxy for Accuracy)
+      const priorityLogs = await AIDecisionLog.find({
+        type: 'task_priority'
+      });
+      
+      const priorityAccepted = priorityLogs.filter(l => l.humanDecision === 'Accepted').length;
+      const avgPriorityAccuracy = priorityLogs.length > 0 ? (priorityAccepted / priorityLogs.length) * 100 : 0;
+
+      return {
+        overallAccuracy: Math.round((avgCapacityAccuracy + avgRiskAccuracy + avgPriorityAccuracy) / 3),
+        sprintCapacityAccuracy: Math.round(avgCapacityAccuracy * 10) / 10,
+        riskPredictionAccuracy: Math.round(avgRiskAccuracy * 10) / 10,
+        taskPriorityAccuracy: Math.round(avgPriorityAccuracy * 10) / 10,
+        dataPoints: {
+          capacity: capacityCount,
+          risk: riskCount,
+          priority: priorityLogs.length
+        },
+        note: 'Accuracy metrics weighted by historical outcomes and human acceptance.'
+      };
+    } catch (error) {
+      console.error('Error calculating AI accuracy:', error);
+      return {
+        overallAccuracy: 0,
+        error: 'Failed to calculate accuracy metrics'
+      };
+    }
   }
 }
 

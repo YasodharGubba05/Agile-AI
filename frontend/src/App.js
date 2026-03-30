@@ -12,6 +12,9 @@ import SprintDetail from './pages/SprintDetail';
 import Tasks from './pages/Tasks';
 import TaskDetail from './pages/TaskDetail';
 import Metrics from './pages/Metrics';
+import AIHub from './pages/AIHub';
+import ProductivityAnalysis from './pages/ProductivityAnalysis';
+import AIDecisionLog from './pages/AIDecisionLog';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -86,6 +89,30 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Metrics />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/ai-hub"
+                element={
+                  <PrivateRoute>
+                    <AIHub />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/productivity/:projectId"
+                element={
+                  <PrivateRoute>
+                    <ProductivityAnalysis />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/ai-logs"
+                element={
+                  <PrivateRoute>
+                    <AIDecisionLog />
                   </PrivateRoute>
                 }
               />

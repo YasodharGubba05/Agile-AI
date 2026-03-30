@@ -22,6 +22,15 @@ router.get('/retrospective/:sprintId', auth, requirePM, aiController.generateRet
 // Team Productivity Analysis
 router.get('/productivity/:projectId', auth, requirePM, aiController.analyzeProductivity);
 
+// Velocity Forecasting
+router.get('/forecast/:projectId', auth, requirePM, aiController.forecastVelocity);
+
+// Workload Balancing
+router.get('/workload/:projectId', auth, requirePM, aiController.getWorkloadBalance);
+
+// Dashboard Summary
+router.get('/dashboard-summary/:projectId', auth, requirePM, aiController.getDashboardSummary);
+
 // Evaluation Metrics
 router.get('/metrics/:projectId', auth, requirePM, aiController.getEvaluationMetrics);
 

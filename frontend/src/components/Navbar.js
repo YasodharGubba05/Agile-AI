@@ -28,7 +28,11 @@ const Navbar = () => {
           <Link to="/sprints" className="navbar-link">Sprints</Link>
           <Link to="/tasks" className="navbar-link">Tasks</Link>
           {user.role === 'PM' && (
-            <span className="navbar-badge">Project Manager</span>
+            <>
+              <Link to="/ai-hub" className="navbar-link">AI Hub</Link>
+              <Link to="/ai-logs" className="navbar-link">AI Logs</Link>
+              <span className="navbar-badge">Project Manager</span>
+            </>
           )}
           <span className="navbar-user">{user.name}</span>
           <button onClick={handleLogout} className="btn btn-secondary">

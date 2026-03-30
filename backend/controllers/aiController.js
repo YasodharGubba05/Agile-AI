@@ -4,6 +4,8 @@ const retrospectiveService = require('../services/ai/retrospectiveService');
 const productivityService = require('../services/ai/productivityService');
 const evaluationMetricsService = require('../services/ai/evaluationMetricsService');
 const humanInTheLoopService = require('../services/ai/humanInTheLoopService');
+const velocityForecastingService = require('../services/ai/velocityForecastingService');
+const teamWorkloadBalancerService = require('../services/ai/teamWorkloadBalancerService');
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
 
@@ -34,7 +36,7 @@ exports.predictSprintCapacity = async (req, res) => {
     );
 
     // Log AI recommendation for human-in-the-loop tracking
-    const logId = humanInTheLoopService.logAIRecommendation({
+    const logId = await humanInTheLoopService.logAIRecommendation({
       type: 'sprint_capacity',
       entityId: projectId,
       aiSuggestion: {
@@ -67,7 +69,7 @@ exports.predictProjectRisk = async (req, res) => {
     const result = await riskPredictionService.predictProjectRisk(projectId);
     
     // Log AI recommendation
-    const logId = humanInTheLoopService.logAIRecommendation({
+    const logId = await humanInTheLoopService.logAIRecommendation({
       type: 'risk_prediction',
       entityId: projectId,
       aiSuggestion: {
@@ -104,7 +106,7 @@ exports.generateRetrospective = async (req, res) => {
     }
     
     // Log AI recommendation
-    const logId = humanInTheLoopService.logAIRecommendation({
+    const logId = await humanInTheLoopService.logAIRecommendation({
       type: 'retrospective',
       entityId: sprintId,
       aiSuggestion: {
@@ -133,12 +135,68 @@ exports.generateRetrospective = async (req, res) => {
 exports.analyzeProductivity = async (req, res) => {
   try {
     const { projectId } = req.params;
-    
     const result = await productivityService.analyzeProductivity(projectId);
-    
     res.json({
       message: 'Productivity analysis completed',
       ...result
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * GET /api/ai/forecast/:projectId
+ * Multi-sprint velocity forecasting
+ */
+exports.forecastVelocity = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const result = await velocityForecastingService.forecastVelocity(projectId);
+    
+    // Log AI recommendation
+    const logId = await humanInTheLoopService.logAIRecommendation({
+      type: 'velocity_forecast',
+      entityId: projectId,
+      aiSuggestion: result.forecasts[0],
+      confidence: result.forecasts[0]?.confidence || 0.5,
+      explanation: `Forecast based on ${result.historicalData?.length || 0} sprints using ${result.bestModel}`,
+      userId: req.user._id.toString()
+    });
+    
+    res.json({
+      message: 'Velocity forecasting completed',
+      ...result,
+      logId
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * GET /api/ai/workload/:projectId
+ * Team workload balancing and optimization
+ */
+exports.getWorkloadBalance = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const result = await teamWorkloadBalancerService.analyzeWorkload(projectId);
+    
+    // Log AI recommendation
+    const logId = await humanInTheLoopService.logAIRecommendation({
+      type: 'workload_balance',
+      entityId: projectId,
+      aiSuggestion: { balanced: result.balanced, suggestions: result.suggestions?.length || 0 },
+      confidence: 0.9,
+      explanation: result.message,
+      userId: req.user._id.toString()
+    });
+    
+    res.json({
+      message: 'Workload analysis completed',
+      ...result,
+      logId
     });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -152,15 +210,14 @@ exports.analyzeProductivity = async (req, res) => {
 exports.getEvaluationMetrics = async (req, res) => {
   try {
     const { projectId } = req.params;
-    
     const metrics = await evaluationMetricsService.calculateMetrics(projectId);
     
     // Calculate overall score (weighted average)
     const overallScore = (
-      metrics.sprintPredictability.score * 0.3 +
-      metrics.velocityStability.score * 0.3 +
-      metrics.taskCompletionRate.rate * 0.2 +
-      metrics.riskDetectionTiming.earlyDetectionScore * 0.2
+      (metrics.sprintPredictability?.score || 0) * 0.3 +
+      (metrics.velocityStability?.score || 0) * 0.3 +
+      (metrics.taskCompletionRate?.rate || 0) * 0.2 +
+      (metrics.riskDetectionTiming?.earlyDetectionScore || 0) * 0.2
     );
 
     res.json({ 
@@ -194,7 +251,7 @@ exports.logHumanDecision = async (req, res) => {
       });
     }
 
-    const logEntry = humanInTheLoopService.logHumanDecision(
+    const logEntry = await humanInTheLoopService.logHumanDecision(
       logId,
       decision,
       overrideReason,
@@ -218,15 +275,60 @@ exports.getDecisionLogs = async (req, res) => {
   try {
     const { type, entityId, decision } = req.query;
     
-    const logs = humanInTheLoopService.getLogs({ type, entityId, decision });
-    const acceptanceRate = humanInTheLoopService.getAcceptanceRate(type);
-    const overrideAnalysis = humanInTheLoopService.getOverrideReasonsAnalysis();
+    const logs = await humanInTheLoopService.getLogs({ type, entityId, decision });
+    const statistics = {
+      acceptanceRate: await humanInTheLoopService.getAcceptanceRate(type),
+      overrideAnalysis: await humanInTheLoopService.getOverrideReasonsAnalysis()
+    };
 
     res.json({
       logs,
-      statistics: {
-        acceptanceRate,
-        overrideAnalysis
+      statistics
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * GET /api/ai/dashboard-summary/:projectId
+ * Get aggregated AI metrics for central dashboard
+ */
+exports.getDashboardSummary = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    
+    const [risk, evaluation, productivity, workload, forecast] = await Promise.all([
+      riskPredictionService.predictProjectRisk(projectId),
+      evaluationMetricsService.calculateMetrics(projectId),
+      productivityService.analyzeProductivity(projectId),
+      teamWorkloadBalancerService.analyzeWorkload(projectId),
+      velocityForecastingService.forecastVelocity(projectId)
+    ]);
+    
+    res.json({
+      message: 'Dashboard summary retrieved',
+      summary: {
+        projectRisk: {
+          level: risk.riskLevel,
+          score: risk.riskScore
+        },
+        evaluation: {
+          overallScore: evaluation.overallScore || 0,
+          predictability: evaluation.sprintPredictability?.score || 0
+        },
+        productivity: {
+          healthStatus: productivity.healthStatus || 'Stable',
+          trend: productivity.trends?.velocity?.direction || 'N/A'
+        },
+        workload: {
+          isBalanced: workload.balanced,
+          suggestionCount: workload.suggestions?.length || 0
+        },
+        forecast: {
+          nextSprint: forecast.forecasts?.[0]?.predicted || forecast.forecasts?.[0]?.models?.sma || 0,
+          trend: forecast.trend?.direction || 'Stable'
+        }
       }
     });
   } catch (error) {

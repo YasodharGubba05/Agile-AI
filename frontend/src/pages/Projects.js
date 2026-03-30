@@ -57,7 +57,7 @@ const Projects = () => {
   }
 
   return (
-    <div className="fade-in">
+    <div className="container fade-in">
       <div className="page-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
           <div>

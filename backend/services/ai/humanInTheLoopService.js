@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const AIDecisionLog = require('../../models/AIDecisionLog');
 
 /**
  * Human-in-the-Loop Service
@@ -16,17 +17,14 @@ const mongoose = require('mongoose');
  * - Demonstrates ethical AI practices
  */
 
-// In-memory storage (in production, use MongoDB collection)
-const aiDecisionLog = [];
-
 class HumanInTheLoopService {
   /**
    * Log AI recommendation
    * @param {Object} params - Recommendation details
    */
-  logAIRecommendation(params) {
+  async logAIRecommendation(params) {
     const {
-      type, // 'sprint_capacity', 'risk_prediction', 'task_priority', 'retrospective'
+      type, // 'sprint_capacity', 'risk_prediction', 'task_priority', 'retrospective', 'workload_balance', 'velocity_forecast'
       entityId, // Sprint ID, Project ID, Task ID, etc.
       aiSuggestion,
       confidence,
@@ -34,22 +32,18 @@ class HumanInTheLoopService {
       userId
     } = params;
 
-    const logEntry = {
-      id: mongoose.Types.ObjectId().toString(),
-      timestamp: new Date(),
+    const logEntry = new AIDecisionLog({
       type,
       entityId,
       aiSuggestion,
-      confidence,
+      confidence: confidence || 0.5,
       explanation,
       userId,
-      humanDecision: 'Pending',
-      overrideReason: null,
-      decisionTimestamp: null
-    };
+      humanDecision: 'Pending'
+    });
 
-    aiDecisionLog.push(logEntry);
-    return logEntry.id;
+    await logEntry.save();
+    return logEntry._id.toString();
   }
 
   /**
@@ -59,8 +53,8 @@ class HumanInTheLoopService {
    * @param {string} overrideReason - Optional reason for override
    * @param {string} userId - User making the decision
    */
-  logHumanDecision(logId, decision, overrideReason = null, userId = null) {
-    const logEntry = aiDecisionLog.find(log => log.id === logId);
+  async logHumanDecision(logId, decision, overrideReason = null, userId = null) {
+    const logEntry = await AIDecisionLog.findById(logId);
     if (!logEntry) {
       throw new Error('Log entry not found');
     }
@@ -70,6 +64,7 @@ class HumanInTheLoopService {
     logEntry.decisionTimestamp = new Date();
     logEntry.decisionUserId = userId;
 
+    await logEntry.save();
     return logEntry;
   }
 
@@ -78,12 +73,14 @@ class HumanInTheLoopService {
    * @param {string} type - AI recommendation type
    * @returns {Object} Statistics
    */
-  getAcceptanceRate(type = null) {
-    const logs = type 
-      ? aiDecisionLog.filter(log => log.type === type && log.humanDecision !== 'Pending')
-      : aiDecisionLog.filter(log => log.humanDecision !== 'Pending');
+  async getAcceptanceRate(type = null) {
+    const query = { humanDecision: { $ne: 'Pending' } };
+    if (type) {
+      query.type = type;
+    }
 
-    if (logs.length === 0) {
+    const total = await AIDecisionLog.countDocuments(query);
+    if (total === 0) {
       return {
         total: 0,
         accepted: 0,
@@ -93,15 +90,15 @@ class HumanInTheLoopService {
       };
     }
 
-    const accepted = logs.filter(log => log.humanDecision === 'Accepted').length;
-    const overridden = logs.filter(log => log.humanDecision === 'Overridden').length;
+    const accepted = await AIDecisionLog.countDocuments({ ...query, humanDecision: 'Accepted' });
+    const overridden = await AIDecisionLog.countDocuments({ ...query, humanDecision: 'Overridden' });
 
     return {
-      total: logs.length,
+      total,
       accepted,
       overridden,
-      acceptanceRate: (accepted / logs.length) * 100,
-      overrideRate: (overridden / logs.length) * 100
+      acceptanceRate: (accepted / total) * 100,
+      overrideRate: (overridden / total) * 100
     };
   }
 
@@ -110,36 +107,40 @@ class HumanInTheLoopService {
    * @param {Object} filters - Optional filters
    * @returns {Array} Log entries
    */
-  getLogs(filters = {}) {
-    let logs = [...aiDecisionLog];
+  async getLogs(filters = {}) {
+    let query = {};
 
     if (filters.type) {
-      logs = logs.filter(log => log.type === filters.type);
+      query.type = filters.type;
     }
 
     if (filters.entityId) {
-      logs = logs.filter(log => log.entityId === filters.entityId);
+      query.entityId = filters.entityId;
     }
 
     if (filters.userId) {
-      logs = logs.filter(log => log.userId === filters.userId);
+      query.userId = filters.userId;
     }
 
     if (filters.decision) {
-      logs = logs.filter(log => log.humanDecision === filters.decision);
+      query.humanDecision = filters.decision;
     }
 
-    return logs.sort((a, b) => b.timestamp - a.timestamp);
+    return await AIDecisionLog.find(query)
+      .populate('userId', 'name email role')
+      .populate('decisionUserId', 'name email role')
+      .sort({ createdAt: -1 });
   }
 
   /**
    * Get override reasons analysis
    * @returns {Object} Analysis of override reasons
    */
-  getOverrideReasonsAnalysis() {
-    const overriddenLogs = aiDecisionLog.filter(log => 
-      log.humanDecision === 'Overridden' && log.overrideReason
-    );
+  async getOverrideReasonsAnalysis() {
+    const overriddenLogs = await AIDecisionLog.find({
+      humanDecision: 'Overridden',
+      overrideReason: { $ne: null }
+    });
 
     const reasons = {};
     overriddenLogs.forEach(log => {

@@ -320,8 +320,8 @@ const Tasks = () => {
                   </span>
                 </td>
                 <td>
-                  <span className={`badge badge-${task.status === 'Completed' ? 'success' : task.status === 'In Progress' ? 'info' : 'warning'}`}>
-                    {task.status}
+                  <span className={`badge badge-${(task.status || 'Pending') === 'Completed' ? 'success' : (task.status || 'Pending') === 'In Progress' ? 'info' : 'warning'}`}>
+                    {task.status || 'Pending'}
                   </span>
                 </td>
                 <td>{task.estimatedEffort} points</td>

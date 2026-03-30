@@ -159,7 +159,7 @@ const Dashboard = () => {
   const completionRate = stats.tasks > 0 ? (stats.completedTasks / stats.tasks) * 100 : 0;
 
   return (
-    <div className="fade-in">
+    <div className="container fade-in">
       <div className="page-header">
         <h1>Dashboard</h1>
         <p>Welcome back, <strong>{user.name}</strong>. Here's your project overview with AI insights.</p>
