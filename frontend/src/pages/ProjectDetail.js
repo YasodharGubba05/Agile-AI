@@ -115,13 +115,22 @@ const ProjectDetail = () => {
               Back
             </Link>
             {user.role === 'PM' && (
-              <button 
-                onClick={handleRiskAnalysis} 
-                className="btn btn-primary"
-                disabled={analyzing}
-              >
-                {analyzing ? 'Analyzing...' : 'AI Risk Analysis'}
-              </button>
+              <>
+                <Link
+                  to={`/intelligence/${id}`}
+                  className="btn btn-primary"
+                  style={{ background: 'linear-gradient(135deg, #7c3aed, #2563eb)', border: 'none' }}
+                >
+                  🧠 Intelligence
+                </Link>
+                <button 
+                  onClick={handleRiskAnalysis} 
+                  className="btn btn-primary"
+                  disabled={analyzing}
+                >
+                  {analyzing ? 'Analyzing...' : 'AI Risk Analysis'}
+                </button>
+              </>
             )}
           </div>
         </div>

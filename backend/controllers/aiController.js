@@ -6,6 +6,8 @@ const evaluationMetricsService = require('../services/ai/evaluationMetricsServic
 const humanInTheLoopService = require('../services/ai/humanInTheLoopService');
 const velocityForecastingService = require('../services/ai/velocityForecastingService');
 const teamWorkloadBalancerService = require('../services/ai/teamWorkloadBalancerService');
+const oracleService = require('../services/ai/oracleService');
+const skillMatchingService = require('../services/ai/skillMatchingService');
 const Project = require('../models/Project');
 const Sprint = require('../models/Sprint');
 
@@ -331,6 +333,54 @@ exports.getDashboardSummary = async (req, res) => {
         }
       }
     });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * POST /api/ai/oracle/:projectId
+ * AI Project Oracle — answer natural language queries about a project
+ */
+exports.queryOracle = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { query } = req.body;
+
+    if (!query || query.trim().length === 0) {
+      return res.status(400).json({ message: 'Query is required' });
+    }
+
+    const response = await oracleService.query(projectId, query, req.user._id.toString());
+    res.json({ response });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * GET /api/ai/skill-match/:taskId
+ * Recommend the best team member for a task based on skills & workload
+ */
+exports.getSkillMatch = async (req, res) => {
+  try {
+    const { taskId } = req.params;
+    const result = await skillMatchingService.recommendAssignee(taskId);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+/**
+ * GET /api/ai/team-skills/:projectId
+ * Get skill profile of the entire project team
+ */
+exports.getTeamSkillProfile = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const result = await skillMatchingService.getTeamSkillProfile(projectId);
+    res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

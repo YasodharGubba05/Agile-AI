@@ -27,7 +27,24 @@ const userSchema = new mongoose.Schema({
   assignedProjects: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Project'
-  }]
+  }],
+  skills: {
+    type: [String],
+    default: []
+  },
+  skillLevel: {
+    type: String,
+    enum: ['Junior', 'Mid', 'Senior'],
+    default: 'Mid'
+  },
+  tasksCompleted: {
+    type: Number,
+    default: 0
+  },
+  avgCompletionDays: {
+    type: Number,
+    default: 0
+  }
 }, {
   timestamps: true
 });

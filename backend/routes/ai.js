@@ -40,4 +40,13 @@ router.post('/decision', auth, aiController.logHumanDecision);
 // Human-in-the-Loop: Get decision logs
 router.get('/decisions', auth, requirePM, aiController.getDecisionLogs);
 
+// AI Project Oracle — natural language project queries
+router.post('/oracle/:projectId', auth, aiController.queryOracle);
+
+// Skill-Based Task Matching — recommend best developer for a task
+router.get('/skill-match/:taskId', auth, requirePM, aiController.getSkillMatch);
+
+// Team Skill Profile — get skill landscape for entire team
+router.get('/team-skills/:projectId', auth, requirePM, aiController.getTeamSkillProfile);
+
 module.exports = router;

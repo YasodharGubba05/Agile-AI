@@ -63,6 +63,14 @@ const taskSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  dependencies: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Task'
+  }],
+  requiredSkills: {
+    type: [String],
+    default: []
+  },
   bugCount: {
     type: Number,
     default: 0

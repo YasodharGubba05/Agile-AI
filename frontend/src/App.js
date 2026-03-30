@@ -15,6 +15,7 @@ import Metrics from './pages/Metrics';
 import AIHub from './pages/AIHub';
 import ProductivityAnalysis from './pages/ProductivityAnalysis';
 import AIDecisionLog from './pages/AIDecisionLog';
+import ProjectIntelligence from './pages/ProjectIntelligence';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -113,6 +114,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <AIDecisionLog />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/intelligence/:projectId"
+                element={
+                  <PrivateRoute>
+                    <ProjectIntelligence />
                   </PrivateRoute>
                 }
               />

@@ -1,0 +1,147 @@
+/* ═══════════════════════════════════════════════════════════
+   RiskRadar3D — Deep Space Premium Theme
+═══════════════════════════════════════════════════════════ */
+
+.radar-wrapper {
+  background: rgba(10, 14, 26, 0.92);
+  border: 1px solid rgba(99, 179, 237, 0.15);
+  border-radius: 20px;
+  overflow: hidden;
+  backdrop-filter: blur(20px);
+}
+
+.radar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(99, 179, 237, 0.1);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.radar-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.radar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #a0aec0;
+  text-transform: capitalize;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.radar-canvas {
+  width: 100%;
+}
+
+.radar-svg {
+  display: block;
+  width: 100%;
+}
+
+.radar-tooltip {
+  position: absolute;
+  background: rgba(10, 15, 35, 0.95);
+  border: 1px solid rgba(99, 179, 237, 0.3);
+  border-radius: 10px;
+  padding: 12px 14px;
+  z-index: 100;
+  pointer-events: none;
+  min-width: 180px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  animation: fadeInTooltip 0.15s ease;
+}
+
+@keyframes fadeInTooltip {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.tooltip-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid rgba(99, 179, 237, 0.1);
+  padding-bottom: 6px;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #a0aec0;
+  margin-bottom: 3px;
+  gap: 16px;
+}
+
+.tooltip-row span:last-child {
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.tooltip-risk {
+  margin-top: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px 8px;
+  background: rgba(99, 179, 237, 0.1);
+  border-radius: 6px;
+  color: #63b3ed;
+}
+
+.radar-stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 16px 24px;
+  border-top: 1px solid rgba(99, 179, 237, 0.1);
+}
+
+.rstat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.rstat-val {
+  font-size: 24px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.rstat span:last-child {
+  font-size: 11px;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.radar-loading, .radar-empty {
+  text-align: center;
+  padding: 60px;
+  color: #718096;
+  font-size: 14px;
+  background: rgba(10, 14, 26, 0.6);
+  border-radius: 20px;
+}
